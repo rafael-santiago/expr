@@ -42,3 +42,9 @@ expr_stack_ctx *expr_stack_pop(expr_stack_ctx *stack) {
 
     return new_top;
 }
+
+void expr_stack_free(expr_stack_ctx *stack) {
+    while (stack != NULL) {
+        stack = expr_stack_pop(stack);
+    }
+}
