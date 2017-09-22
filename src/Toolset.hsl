@@ -1,0 +1,37 @@
+include ~/toolsets/gcc/gcc-app.hsl
+include ~/toolsets/clang/clang-app.hsl
+
+local function run_cmd_with_no_out(cmdline type string) : result type int {
+    if (hefesto.sys.os_name() != "windows") {
+        $cmdline = $cmdline + " > /dev/null 2>&1";
+    } else {
+        $cmdline = $cmdline + " > nul 2>&1";
+    }
+    result hefesto.sys.run($cmdline);
+}
+
+local function has_gcc() : result type int {
+    result (run_cmd_with_no_out("gcc --version") == 0);
+}
+
+local function has_clang() : result type int {
+    result (run_cmd_with_no_out("clang --version") == 0);
+}
+
+function get_toolset() : result type string {
+    var use_toolset type list;
+    var toolset_name type string;
+
+    $toolset_name = "null-toolset";
+    $use_toolset = hefesto.sys.get_option("use-toolset");
+
+    if ($use_toolset.count() > 0) {
+        $toolset_name = $use_toolset.item(0);
+    } else if (has_gcc()) {
+        $toolset_name = "gcc-c-app";
+    } else if (has_clang()) {
+        $toolset_name = "clang-c-app";
+    }
+
+    result $toolset_name;
+}

@@ -1,0 +1,51 @@
+include Toolset.hsl
+include ~/toolsets/common/utils/lang/c/dependency_scanner.hsl
+
+local var src type list;
+local var inc type list;
+local var cflags type list;
+local var lib type list;
+local var ldflags type list;
+
+local var avail_toolset type string;
+local var dep_chain type string;
+local var appname type string;
+
+project expr : toolset $avail_toolset : dependencies $dep_chain : $src, $inc, $cflags, $lib, $ldflags, $appname;
+
+expr.preloading() {
+    $avail_toolset = get_toolset();
+}
+
+expr.prologue() {
+    $dep_chain = get_c_cpp_deps();
+    $src.ls(".*\\.c$");
+    $inc = hefesto.sys.get_option("includes");
+    $cflags = hefesto.sys.get_option("cflags");
+    $lib = hefesto.sys.get_option("libraries");
+    $ldflags = hefesto.sys.get_option("ldflags");
+    $appname = "expr";
+    if (hefesto.sys.os_name() == "windows") {
+        $appname = $appname + ".exe";
+    }
+}
+
+expr.epilogue() {
+    if (hefesto.sys.last_forge_result() == 0) {
+        var oldcwd type string;
+        $oldcwd = hefesto.sys.pwd();
+        if (hefesto.sys.cd("test") == 0) {
+            hefesto.sys.echo("BUILD ERROR: Unable to find test directory!\n");
+            hefesto.project.abort(1);
+        }
+        hefesto.sys.forge("expr-tests", "Forgefile.hsl", "--forgefiles=Forgefile.hsl " +
+                                                         "--Forgefile-projects=expr-tests " +
+                                                         "--includes=cutest/src/ --libraries=cutest/src/lib/ " +
+                                                         "--bin-output-dir=bin --obj-output-dir=o " +
+                                                         hefesto.project.cmdline());
+        if (hefesto.sys.last_forge_result() != 0) {
+            hefesto.project.abort(1);
+        }
+        hefesto.sys.cd($oldcwd);
+    }
+}
