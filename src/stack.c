@@ -17,6 +17,7 @@ expr_stack_ctx *expr_stack_push(expr_stack_ctx *stack, const char *data, const s
     }
 
     new_top = (expr_stack_ctx *) expr_alloc(sizeof(expr_stack_ctx));
+    new_top->next = NULL;
 
     new_top->data = (char *) expr_alloc(data_size + 1);
     memset(new_top->data, 0, data_size + 1);
