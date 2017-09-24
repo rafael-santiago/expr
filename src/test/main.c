@@ -8,6 +8,8 @@
 #include <cutest.h>
 #include "../stack.h"
 #include "../memory.h"
+#include "../expr.h"
+#include "../rpn.h"
 #include <string.h>
 
 CUTE_TEST_CASE(memory_tests)
@@ -16,6 +18,19 @@ CUTE_TEST_CASE(memory_tests)
     CUTE_ASSERT(data != NULL);
     // INFO(Rafael): No SIGSEGV must happen. If "data" was not properly freed, the memory leak check
     //               system from unit test library will detect this issue.
+    expr_free(data);
+
+
+    // INFO(Rafael): If the realloc is broken it will result in memory invalid access and you will know.
+
+    data = expr_alloc(2);
+    CUTE_ASSERT(data != NULL);
+    memcpy(data, "a", 1);
+    data = expr_realloc(data, 1024);
+    CUTE_ASSERT(*data == 'a');
+    CUTE_ASSERT(data != NULL);
+    memset(data, 0, 1024);
+
     expr_free(data);
 CUTE_TEST_CASE_END
 
@@ -98,10 +113,88 @@ CUTE_TEST_CASE(expr_stack_free_tests)
     // INFO(Rafael): Any memory leak should be detected by the memory leak system from the unit test library.
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(is_expr_blank_tests)
+    CUTE_ASSERT(is_expr_blank(' ') == 1);
+    CUTE_ASSERT(is_expr_blank('\n') == 1);
+    CUTE_ASSERT(is_expr_blank('\t') == 1);
+    CUTE_ASSERT(is_expr_blank('\r') == 1);
+    CUTE_ASSERT(is_expr_blank('0') == 0);
+    CUTE_ASSERT(is_expr_blank('1') == 0);
+    CUTE_ASSERT(is_expr_blank('2') == 0);
+    CUTE_ASSERT(is_expr_blank('3') == 0);
+    CUTE_ASSERT(is_expr_blank('4') == 0);
+    CUTE_ASSERT(is_expr_blank('5') == 0);
+    CUTE_ASSERT(is_expr_blank('6') == 0);
+    CUTE_ASSERT(is_expr_blank('7') == 0);
+    CUTE_ASSERT(is_expr_blank('8') == 0);
+    CUTE_ASSERT(is_expr_blank('9') == 0);
+    CUTE_ASSERT(is_expr_blank('+') == 0);
+    CUTE_ASSERT(is_expr_blank('-') == 0);
+    CUTE_ASSERT(is_expr_blank('*') == 0);
+    CUTE_ASSERT(is_expr_blank('/') == 0);
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(expr_get_op_precedence_tests)
+    CUTE_ASSERT(expr_get_op_precedence('+') == 0);
+    CUTE_ASSERT(expr_get_op_precedence('-') == 0);
+    CUTE_ASSERT(expr_get_op_precedence('*') == 1);
+    CUTE_ASSERT(expr_get_op_precedence('/') == 1);
+    CUTE_ASSERT(expr_get_op_precedence('0') == -1);
+    CUTE_ASSERT(expr_get_op_precedence('1') == -1);
+    CUTE_ASSERT(expr_get_op_precedence('2') == -1);
+    CUTE_ASSERT(expr_get_op_precedence('3') == -1);
+    CUTE_ASSERT(expr_get_op_precedence('4') == -1);
+    CUTE_ASSERT(expr_get_op_precedence('5') == -1);
+    CUTE_ASSERT(expr_get_op_precedence('6') == -1);
+    CUTE_ASSERT(expr_get_op_precedence('7') == -1);
+    CUTE_ASSERT(expr_get_op_precedence('8') == -1);
+    CUTE_ASSERT(expr_get_op_precedence('9') == -1);
+    CUTE_ASSERT(expr_get_op_precedence(' ') == -1);
+    CUTE_ASSERT(expr_get_op_precedence('\n') == -1);
+    CUTE_ASSERT(expr_get_op_precedence('\r') == -1);
+    CUTE_ASSERT(expr_get_op_precedence('\t') == -1);
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(expr_ifx2rpn_tests)
+    struct ifx2rpn_test {
+        char *ifx;
+        char *rpn;
+    };
+    struct ifx2rpn_test test_vector[] = {
+        { "1 + 2", "1 2 +" },
+        { "((15 / (7 - (1 + 1))) * 3) - (2 + (1 + 1))", "15 7 1 1 + - / 3 * 2 1 1 + + -" },
+        { "1+2", "1 2 +" },
+        { "((15/(7-(1+1)))*3)-(2+(1+1))", "15 7 1 1 + - / 3 * 2 1 1 + + -" },
+        { "1 +2", "1 2 +" },
+        { "1+ 2", "1 2 +" },
+        { "((15/ (7 -(1 +1)))* 3)-(2      +    (1\t\t\t+1\n)\r\r)", "15 7 1 1 + - / 3 * 2 1 1 + + -" },
+    };
+    size_t tv_nr = sizeof(test_vector) / sizeof(test_vector[0]), tv;
+    char *rpn;
+    size_t rpn_size;
+
+    for (tv = 0; tv < tv_nr; tv++) {
+        rpn = expr_ifx2rpn(test_vector[tv].ifx, strlen(test_vector[tv].ifx), NULL);
+        CUTE_ASSERT(rpn != NULL);
+        CUTE_ASSERT(strlen(rpn) == strlen(test_vector[tv].rpn));
+        CUTE_ASSERT(strcmp(rpn, test_vector[tv].rpn) == 0);
+        expr_free(rpn);
+
+        rpn = expr_ifx2rpn(test_vector[tv].ifx, strlen(test_vector[tv].ifx), &rpn_size);
+        CUTE_ASSERT(rpn != NULL);
+        CUTE_ASSERT(rpn_size == strlen(test_vector[tv].rpn));
+        CUTE_ASSERT(strcmp(rpn, test_vector[tv].rpn) == 0);
+        expr_free(rpn);
+    }
+CUTE_TEST_CASE_END
+
 CUTE_TEST_CASE(expr_tests)
     CUTE_RUN_TEST(memory_tests);
     CUTE_RUN_TEST(expr_stack_ctx_tests);
     CUTE_RUN_TEST(expr_stack_free_tests);
+    CUTE_RUN_TEST(is_expr_blank_tests);
+    CUTE_RUN_TEST(expr_get_op_precedence_tests);
+    CUTE_RUN_TEST(expr_ifx2rpn_tests);
 CUTE_TEST_CASE_END
 
 CUTE_MAIN(expr_tests);
