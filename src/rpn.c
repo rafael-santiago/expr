@@ -169,7 +169,7 @@ char *expr_ifx2rpn(const char *ifx, const size_t ifx_size, size_t *rpn_size) {
 int expr_eval(const char *rpn, const size_t rpn_size, int *has_error) {
     const char *rp_next, *rp_end;
     expr_stack_ctx *stack = NULL;
-    char *symbol, tmp[255];
+    char *symbol;
     size_t symbol_size;
     int result = 0;
 
@@ -232,7 +232,7 @@ int expr_eval(const char *rpn, const size_t rpn_size, int *has_error) {
     stack = expr_stack_pop(stack);
 
     if (!expr_stack_empty(stack)) {
-        // WARN(Rafael): In cases of well converted expressions to RPN it should never happen.
+        // WARN(Rafael): In cases of well converted expressions it should never happen.
         //               But a memory leak is pretty ugly.
         expr_stack_free(stack);
         *has_error = 1;
