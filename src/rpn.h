@@ -12,4 +12,6 @@
 
 char *expr_ifx2rpn(const char *ifx, const size_t ifx_size, size_t *rpn_size);
 
+int expr_eval(const char *rpn, const size_t rpn_size, int *has_error);
+
 #endif

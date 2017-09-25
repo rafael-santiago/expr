@@ -110,31 +110,28 @@ char *expr_ifx2rpn(const char *ifx, const size_t ifx_size, size_t *rpn_size) {
         if (symbol_size > 1 || isdigit(*symbol)) {
             // INFO(Rafael): It is a number so just enqueue it.
             rpn_enqueue(rp, rp_end, symbol, symbol_size);
-        } else {
-            // INFO(Rafael): It is an operator or ).
-            if (strcmp(symbol, "(") == 0) {
-                stack = expr_stack_push(stack, symbol, symbol_size);
-            } else if (strcmp(symbol, ")") == 0) {
-                // INFO(Rafael): Pop from stack and enqueue into rpn until a '(' is gotten.
-                top = expr_stack_top(stack);
-                while (!expr_stack_empty(stack) && strcmp(top->data, "(") != 0) {
-                    rpn_enqueue_and_pop(stack, top, rp, rp_end);
-                }
-                stack = expr_stack_pop(stack);
-            } else if (is_expr_op(*symbol)) {
-                // INFO(Rafael): Pop from stack while there is on the top of it an operator with precedence equal or greater
-                //               than the current operator. However, before poping enqueue it in rpn.
-
-                top = expr_stack_top(stack);
-                curr_op_precedence = expr_get_op_precedence(*symbol);
-                while (!expr_stack_empty(stack) && is_expr_op(*top->data) &&
-                       expr_get_op_precedence(*top->data) >= curr_op_precedence) {
-                    rpn_enqueue_and_pop(stack, top, rp, rp_end);
-                }
-
-                // INFO(Rafael): Push onto stack the current operator.
-                stack = expr_stack_push(stack, symbol, symbol_size);
+        } else if (*symbol == '(') {  // INFO(Rafael): It is an operator, '(' or ')'.
+            stack = expr_stack_push(stack, symbol, symbol_size);
+        } else if (*symbol == ')') {
+            // INFO(Rafael): Pop from stack and enqueue into rpn until a '(' is gotten.
+            top = expr_stack_top(stack);
+            while (!expr_stack_empty(stack) && strcmp(top->data, "(") != 0) {
+                rpn_enqueue_and_pop(stack, top, rp, rp_end);
             }
+            stack = expr_stack_pop(stack);
+        } else if (is_expr_op(*symbol)) {
+            // INFO(Rafael): Pop from stack while there is on the top of it an operator with precedence equal or greater
+            //               than the current operator. However, before poping enqueue it in rpn.
+
+            top = expr_stack_top(stack);
+            curr_op_precedence = expr_get_op_precedence(*symbol);
+            while (!expr_stack_empty(stack) && is_expr_op(*top->data) &&
+                   expr_get_op_precedence(*top->data) >= curr_op_precedence) {
+                rpn_enqueue_and_pop(stack, top, rp, rp_end);
+            }
+
+            // INFO(Rafael): Push onto stack the current operator.
+            stack = expr_stack_push(stack, symbol, symbol_size);
         }
 
         expr_free(symbol);
@@ -167,6 +164,81 @@ char *expr_ifx2rpn(const char *ifx, const size_t ifx_size, size_t *rpn_size) {
     }
 
     return rpn;
+}
+
+int expr_eval(const char *rpn, const size_t rpn_size, int *has_error) {
+    const char *rp_next, *rp_end;
+    expr_stack_ctx *stack = NULL;
+    char *symbol, tmp[255];
+    size_t symbol_size;
+    int result = 0;
+
+    if (rpn == NULL || rpn_size == 0 || has_error == NULL) {
+        return 0;
+    }
+
+    rp_next = rpn;
+    rp_end = rp_next + rpn_size;
+
+    symbol = get_curr_symbol(rp_next, rp_end, &rp_next, &symbol_size);
+
+    while (symbol != NULL) {
+        if (symbol_size > 1 || isdigit(*symbol)) {
+            stack = expr_stack_push(stack, symbol, symbol_size);
+        } else if (is_expr_op(*symbol)) {
+            switch (*symbol) {
+                case '+':
+                    result += expr_add(&stack, has_error);
+                    break;
+
+                case '-':
+                    result += expr_sub(&stack, has_error);
+                    break;
+
+                case '*':
+                    result += expr_mul(&stack, has_error);
+                    break;
+
+                case '/':
+                    result += expr_div(&stack, has_error);
+                    break;
+
+                default:
+                    // WARN(Rafael): It should never happen.
+                    *has_error = 1;
+                    printf("WARN: unexpected operator '%c'.\n", *symbol);
+                    expr_free(symbol);
+                    return 0;
+            }
+        }
+
+        expr_free(symbol);
+
+        if (*has_error) {
+            return 0;
+        }
+
+        symbol = get_curr_symbol(rp_next, rp_end, &rp_next, &symbol_size);
+    }
+
+    if (expr_stack_empty(stack)) {
+        // WARN(Rafael): Some error occurred.
+        *has_error = 1;
+        return 0;
+    }
+
+    result = atoi(expr_stack_top(stack)->data);
+
+    stack = expr_stack_pop(stack);
+
+    if (!expr_stack_empty(stack)) {
+        // WARN(Rafael): In cases of well converted expressions to RPN it should never happen.
+        //               But a memory leak is pretty ugly.
+        expr_stack_free(stack);
+        *has_error = 1;
+    }
+
+    return result;
 }
 
 #undef rpn_enqueue

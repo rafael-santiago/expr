@@ -188,6 +188,96 @@ CUTE_TEST_CASE(expr_ifx2rpn_tests)
     }
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(expr_add_tests)
+    expr_stack_ctx *stack = NULL;
+    int has_error;
+
+    stack = expr_stack_push(stack, "2", 1);
+    CUTE_ASSERT(stack != NULL);
+
+    stack = expr_stack_push(stack, "3", 1);
+    CUTE_ASSERT(stack != NULL);
+
+    CUTE_ASSERT(expr_add(&stack, &has_error) == 5);
+    CUTE_ASSERT(has_error == 0);
+    CUTE_ASSERT(expr_stack_empty(stack) == 0);
+    CUTE_ASSERT(strcmp(expr_stack_top(stack)->data, "5") == 0);
+
+    expr_stack_free(stack);
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(expr_sub_tests)
+    expr_stack_ctx *stack = NULL;
+    int has_error;
+
+    stack = expr_stack_push(stack, "3", 1);
+    CUTE_ASSERT(stack != NULL);
+
+    stack = expr_stack_push(stack, "4", 1);
+    CUTE_ASSERT(stack != NULL);
+
+    CUTE_ASSERT(expr_sub(&stack, &has_error) == 1);
+    CUTE_ASSERT(has_error == 0);
+    CUTE_ASSERT(expr_stack_empty(stack) == 0);
+    CUTE_ASSERT(strcmp(expr_stack_top(stack)->data, "1") == 0);
+
+    expr_stack_free(stack);
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(expr_mul_tests)
+    expr_stack_ctx *stack = NULL;
+    int has_error;
+
+    stack = expr_stack_push(stack, "50", 2);
+    CUTE_ASSERT(stack != NULL);
+
+    stack = expr_stack_push(stack, "5", 1);
+    CUTE_ASSERT(stack != NULL);
+
+    CUTE_ASSERT(expr_mul(&stack, &has_error) == 250);
+    CUTE_ASSERT(has_error == 0);
+    CUTE_ASSERT(expr_stack_empty(stack) == 0);
+    CUTE_ASSERT(strcmp(expr_stack_top(stack)->data, "250") == 0);
+
+    expr_stack_free(stack);
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(expr_div_tests)
+    expr_stack_ctx *stack = NULL;
+    int has_error;
+
+    stack = expr_stack_push(stack, "5", 1);
+    CUTE_ASSERT(stack != NULL);
+
+    stack = expr_stack_push(stack, "250", 3);
+    CUTE_ASSERT(stack != NULL);
+
+    CUTE_ASSERT(expr_div(&stack, &has_error) == 50);
+    CUTE_ASSERT(has_error == 0);
+    CUTE_ASSERT(expr_stack_empty(stack) == 0);
+    CUTE_ASSERT(strcmp(expr_stack_top(stack)->data, "50") == 0);
+
+    expr_stack_free(stack);
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(expr_eval_tests)
+    struct expr_eval_test {
+        char *rpn;
+        int result;
+    };
+    struct expr_eval_test test_vector[] = {
+        { "1 2 +", 3 },
+        { "15 7 1 1 + - / 3 * 2 1 1 + + -", 4 }
+    };
+    size_t tv_nr = sizeof(test_vector) / sizeof(test_vector[0]), tv;
+    int has_error;
+
+    for (tv = 0; tv < tv_nr; tv++) {
+        CUTE_ASSERT(expr_eval(test_vector[tv].rpn, strlen(test_vector[tv].rpn), &has_error) == test_vector[tv].result);
+        CUTE_ASSERT(has_error == 0);
+    }
+CUTE_TEST_CASE_END
+
 CUTE_TEST_CASE(expr_tests)
     CUTE_RUN_TEST(memory_tests);
     CUTE_RUN_TEST(expr_stack_ctx_tests);
@@ -195,6 +285,11 @@ CUTE_TEST_CASE(expr_tests)
     CUTE_RUN_TEST(is_expr_blank_tests);
     CUTE_RUN_TEST(expr_get_op_precedence_tests);
     CUTE_RUN_TEST(expr_ifx2rpn_tests);
+    CUTE_RUN_TEST(expr_add_tests);
+    CUTE_RUN_TEST(expr_sub_tests);
+    CUTE_RUN_TEST(expr_mul_tests);
+    CUTE_RUN_TEST(expr_div_tests);
+    CUTE_RUN_TEST(expr_eval_tests);
 CUTE_TEST_CASE_END
 
 CUTE_MAIN(expr_tests);
