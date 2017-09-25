@@ -373,6 +373,44 @@ CUTE_TEST_CASE(expr_get_curr_symbol_tests)
     CUTE_ASSERT(symbol_size == 0);
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(expr_check_tests)
+    struct expr_check_test {
+        char *expr;
+        int is_valid;
+    };
+    struct expr_check_test test_vector[] = {
+        { ""                                                      , 0 },
+        { "1"                                                     , 1 },
+        { "+"                                                     , 0 },
+        { "-"                                                     , 0 },
+        { "/"                                                     , 0 },
+        { "*"                                                     , 0 },
+        { "1 + 1"                                                 , 1 },
+        { "1 + "                                                  , 0 },
+        { "1+"                                                    , 0 },
+        { "(1 + 2 + 3)"                                           , 1 },
+        { "(1 + 2 + 3"                                            , 0 },
+        { "0 + 2 + 3) / (2 + 1)"                                  , 0 },
+        { "1 + 2"                                                 , 1 },
+        { "-1 + 2"                                                , 1 },
+        { "((15 / (7 - (1 + 1))) * 3) - (2 + (1 + 1))"            , 1 },
+        { "1+2"                                                   , 1 },
+        { "((15/(7-(1+1)))*3)-(2+(1+1))"                          , 1 },
+        { "1 +2"                                                  , 1 },
+        { "((15/ (7 -(1 +1)))* 3)-(2      +    (1\t\t\t+1\n)\r\r)", 1 }
+    };
+    size_t tv, tv_nr = sizeof(test_vector) / sizeof(test_vector[0]);
+    char *ep;
+
+    CUTE_ASSERT(expr_check(NULL, 100) == 0);
+
+    for (tv = 0; tv < tv_nr; tv++) {
+        ep = test_vector[tv].expr;
+        CUTE_ASSERT(expr_check(test_vector[tv].expr, strlen(test_vector[tv].expr)) == test_vector[tv].is_valid);
+        CUTE_ASSERT(ep == test_vector[tv].expr);
+    }
+CUTE_TEST_CASE_END
+
 CUTE_TEST_CASE(expr_tests)
     CUTE_RUN_TEST(memory_tests);
     CUTE_RUN_TEST(expr_stack_ctx_tests);
@@ -380,6 +418,7 @@ CUTE_TEST_CASE(expr_tests)
     CUTE_RUN_TEST(is_expr_blank_tests);
     CUTE_RUN_TEST(expr_get_op_precedence_tests);
     CUTE_RUN_TEST(expr_get_curr_symbol_tests);
+    CUTE_RUN_TEST(expr_check_tests);
     CUTE_RUN_TEST(expr_ifx2rpn_tests);
     CUTE_RUN_TEST(expr_add_tests);
     CUTE_RUN_TEST(expr_sub_tests);

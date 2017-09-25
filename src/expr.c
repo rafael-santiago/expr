@@ -188,6 +188,53 @@ int expr_div(expr_stack_ctx **stack, int *has_error) {
     expr_op_epilogue(stack, has_error, tmp, a);
 }
 
+int expr_check(const char *expr, const size_t expr_size) {
+    const char *ep_next, *ep_end;
+    char *symbol = NULL;
+    size_t symbol_size;
+    int is_valid;
+    int state = 0;
+    int p_nr = 0;
+
+    if (expr == NULL || expr_size == 0) {
+        return 0;
+    }
+
+    ep_next = expr;
+    ep_end = ep_next + expr_size;
+
+    is_valid = 1;
+
+    symbol = expr_get_curr_symbol(ep_next, ep_end, &ep_next, &symbol_size);
+
+    while (symbol != NULL && is_valid) {
+        if (symbol_size == 1 && !isdigit(*symbol)) {
+            if (*symbol == '(') {
+                p_nr++;
+            } else if (*symbol == ')') {
+                p_nr--;
+                is_valid = (p_nr > -1);
+            } else {
+                is_valid = (expr_get_op_precedence(*symbol) > -1);
+                state = 1;
+            }
+        } else if (symbol_size > 1) {
+            is_valid = expr_is_valid_number(symbol, symbol_size);
+            state = 0;
+        } else {
+            state = 0;
+        }
+
+        expr_free(symbol);
+
+        if (is_valid) {
+            symbol = expr_get_curr_symbol(ep_next, ep_end, &ep_next, &symbol_size);
+        }
+    }
+
+    return (is_valid && state == 0 && p_nr == 0);
+}
+
 #undef expr_op_prologue
 
 #undef expr_op_ab_text

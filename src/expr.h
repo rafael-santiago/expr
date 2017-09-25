@@ -26,4 +26,6 @@ int expr_mul(expr_stack_ctx **stack, int *has_error);
 
 int expr_div(expr_stack_ctx **stack, int *has_error);
 
+int expr_check(const char *expr, const size_t expr_size);
+
 #endif
