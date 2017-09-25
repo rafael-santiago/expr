@@ -34,51 +34,6 @@
     top = expr_stack_top(stack);\
 }\
 
-static char *get_curr_symbol(const char *buffer, const char *buffer_end, const char **next, size_t *symbol_size);
-
-static char *get_curr_symbol(const char *buffer, const char *buffer_end, const char **next, size_t *symbol_size) {
-    const char *bp, *tbp;
-    char *symbol = NULL;
-
-    if (buffer == NULL || *buffer == 0 || buffer_end == NULL ||
-        next == NULL || symbol_size == NULL || buffer >= buffer_end) {
-        return NULL;
-    }
-
-    *symbol_size = 0;
-
-    // INFO(Rafael): Finding the initial point of the current symbol.
-
-    bp = buffer;
-
-    while (bp != buffer_end && is_expr_blank(*bp)) {
-        bp++;
-    }
-
-    // INFO(Rafael): Finding the initial point of the next symbol.
-
-    if (isdigit(*bp)) {
-        (*next) = bp + 1;
-
-        while ((*next) != buffer_end && isdigit(**next)) {
-            (*next)++;
-        }
-    } else if (is_expr_op(*bp) || (*bp) == '(' || (*bp) == ')') {
-        (*next) = bp + 1;
-    } else {
-        return NULL;
-    }
-
-    // INFO(Rafael): Copying the current symbol and returning it.
-
-    *symbol_size = (*next) - bp;
-    symbol = (char *) expr_alloc(*symbol_size + 1);
-    memset(symbol, 0, *symbol_size + 1);
-    memcpy(symbol, bp, *symbol_size);
-
-    return symbol;
-}
-
 char *expr_ifx2rpn(const char *ifx, const size_t ifx_size, size_t *rpn_size) {
     char *rpn, *rp, *rp_end;
     const char *ifx_next, *ifx_end;
@@ -104,7 +59,7 @@ char *expr_ifx2rpn(const char *ifx, const size_t ifx_size, size_t *rpn_size) {
     ifx_next = ifx;
     ifx_end = ifx + ifx_size;
 
-    symbol = get_curr_symbol(ifx_next, ifx_end, &ifx_next, &symbol_size);
+    symbol = expr_get_curr_symbol(ifx_next, ifx_end, &ifx_next, &symbol_size);
 
     while (symbol != NULL) {
         if (symbol_size > 1 || isdigit(*symbol)) {
@@ -135,7 +90,7 @@ char *expr_ifx2rpn(const char *ifx, const size_t ifx_size, size_t *rpn_size) {
         }
 
         expr_free(symbol);
-        symbol = get_curr_symbol(ifx_next, ifx_end, &ifx_next, &symbol_size);
+        symbol = expr_get_curr_symbol(ifx_next, ifx_end, &ifx_next, &symbol_size);
     }
 
     top = expr_stack_top(stack);
@@ -180,7 +135,7 @@ int expr_eval(const char *rpn, const size_t rpn_size, int *has_error) {
     rp_next = rpn;
     rp_end = rp_next + rpn_size;
 
-    symbol = get_curr_symbol(rp_next, rp_end, &rp_next, &symbol_size);
+    symbol = expr_get_curr_symbol(rp_next, rp_end, &rp_next, &symbol_size);
 
     while (symbol != NULL) {
         if (symbol_size > 1 || isdigit(*symbol)) {
@@ -218,7 +173,7 @@ int expr_eval(const char *rpn, const size_t rpn_size, int *has_error) {
             return 0;
         }
 
-        symbol = get_curr_symbol(rp_next, rp_end, &rp_next, &symbol_size);
+        symbol = expr_get_curr_symbol(rp_next, rp_end, &rp_next, &symbol_size);
     }
 
     if (expr_stack_empty(stack)) {

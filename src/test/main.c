@@ -162,6 +162,7 @@ CUTE_TEST_CASE(expr_ifx2rpn_tests)
     };
     struct ifx2rpn_test test_vector[] = {
         { "1 + 2", "1 2 +" },
+        { "-1 + 2", "-1 2 +" },
         { "((15 / (7 - (1 + 1))) * 3) - (2 + (1 + 1))", "15 7 1 1 + - / 3 * 2 1 1 + + -" },
         { "1+2", "1 2 +" },
         { "((15/(7-(1+1)))*3)-(2+(1+1))", "15 7 1 1 + - / 3 * 2 1 1 + + -" },
@@ -267,7 +268,9 @@ CUTE_TEST_CASE(expr_eval_tests)
     };
     struct expr_eval_test test_vector[] = {
         { "1 2 +", 3 },
-        { "15 7 1 1 + - / 3 * 2 1 1 + + -", 4 }
+        { "15 7 1 1 + - / 3 * 2 1 1 + + -", 4 },
+        { "-1 -1 -", 0 },
+        { "-1 -1 +", -2 }
     };
     size_t tv_nr = sizeof(test_vector) / sizeof(test_vector[0]), tv;
     int has_error;
@@ -278,12 +281,105 @@ CUTE_TEST_CASE(expr_eval_tests)
     }
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(expr_get_curr_symbol_tests)
+    const char *expr = "-1 + ( 22 - 333 ) / 4444 * 55555";
+    const char *expr_next, *expr_end;
+    char *symbol;
+    size_t symbol_size;
+
+    expr_next = expr;
+    expr_end = expr_next + strlen(expr_next);
+
+    symbol = expr_get_curr_symbol(expr_next, expr_end, &expr_next, &symbol_size);
+
+    CUTE_ASSERT(symbol != NULL);
+    CUTE_ASSERT(symbol_size == 2);
+    CUTE_ASSERT(strcmp(symbol, "-1") == 0);
+    expr_free(symbol);
+
+    symbol = expr_get_curr_symbol(expr_next, expr_end, &expr_next, &symbol_size);
+
+    CUTE_ASSERT(symbol != NULL);
+    CUTE_ASSERT(symbol_size == 1);
+    CUTE_ASSERT(strcmp(symbol, "+") == 0);
+    expr_free(symbol);
+
+    symbol = expr_get_curr_symbol(expr_next, expr_end, &expr_next, &symbol_size);
+
+    CUTE_ASSERT(symbol != NULL);
+    CUTE_ASSERT(symbol_size == 1);
+    CUTE_ASSERT(strcmp(symbol, "(") == 0);
+    expr_free(symbol);
+
+    symbol = expr_get_curr_symbol(expr_next, expr_end, &expr_next, &symbol_size);
+
+    CUTE_ASSERT(symbol != NULL);
+    CUTE_ASSERT(symbol_size == 2);
+    CUTE_ASSERT(strcmp(symbol, "22") == 0);
+    expr_free(symbol);
+
+    symbol = expr_get_curr_symbol(expr_next, expr_end, &expr_next, &symbol_size);
+
+    CUTE_ASSERT(symbol != NULL);
+    CUTE_ASSERT(symbol_size == 1);
+    CUTE_ASSERT(strcmp(symbol, "-") == 0);
+    expr_free(symbol);
+
+    symbol = expr_get_curr_symbol(expr_next, expr_end, &expr_next, &symbol_size);
+
+    CUTE_ASSERT(symbol != NULL);
+    CUTE_ASSERT(symbol_size == 3);
+    CUTE_ASSERT(strcmp(symbol, "333") == 0);
+    expr_free(symbol);
+
+    symbol = expr_get_curr_symbol(expr_next, expr_end, &expr_next, &symbol_size);
+
+    CUTE_ASSERT(symbol != NULL);
+    CUTE_ASSERT(symbol_size == 1);
+    CUTE_ASSERT(strcmp(symbol, ")") == 0);
+    expr_free(symbol);
+
+    symbol = expr_get_curr_symbol(expr_next, expr_end, &expr_next, &symbol_size);
+
+    CUTE_ASSERT(symbol != NULL);
+    CUTE_ASSERT(symbol_size == 1);
+    CUTE_ASSERT(strcmp(symbol, "/") == 0);
+    expr_free(symbol);
+
+    symbol = expr_get_curr_symbol(expr_next, expr_end, &expr_next, &symbol_size);
+
+    CUTE_ASSERT(symbol != NULL);
+    CUTE_ASSERT(symbol_size == 4);
+    CUTE_ASSERT(strcmp(symbol, "4444") == 0);
+    expr_free(symbol);
+
+    symbol = expr_get_curr_symbol(expr_next, expr_end, &expr_next, &symbol_size);
+
+    CUTE_ASSERT(symbol != NULL);
+    CUTE_ASSERT(symbol_size == 1);
+    CUTE_ASSERT(strcmp(symbol, "*") == 0);
+    expr_free(symbol);
+
+    symbol = expr_get_curr_symbol(expr_next, expr_end, &expr_next, &symbol_size);
+
+    CUTE_ASSERT(symbol != NULL);
+    CUTE_ASSERT(symbol_size == 5);
+    CUTE_ASSERT(strcmp(symbol, "55555") == 0);
+    expr_free(symbol);
+
+    symbol = expr_get_curr_symbol(expr_next, expr_end, &expr_next, &symbol_size);
+
+    CUTE_ASSERT(symbol == NULL);
+    CUTE_ASSERT(symbol_size == 0);
+CUTE_TEST_CASE_END
+
 CUTE_TEST_CASE(expr_tests)
     CUTE_RUN_TEST(memory_tests);
     CUTE_RUN_TEST(expr_stack_ctx_tests);
     CUTE_RUN_TEST(expr_stack_free_tests);
     CUTE_RUN_TEST(is_expr_blank_tests);
     CUTE_RUN_TEST(expr_get_op_precedence_tests);
+    CUTE_RUN_TEST(expr_get_curr_symbol_tests);
     CUTE_RUN_TEST(expr_ifx2rpn_tests);
     CUTE_RUN_TEST(expr_add_tests);
     CUTE_RUN_TEST(expr_sub_tests);

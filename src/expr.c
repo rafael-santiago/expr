@@ -6,8 +6,10 @@
  *
  */
 #include "expr.h"
+#include "memory.h"
 #include "stack.h"
 #include <stdlib.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -47,7 +49,9 @@
     return result;\
 }
 
-int expr_get_op_precedence(char op) {
+static int expr_is_valid_number(const char *num, const size_t num_size);
+
+int expr_get_op_precedence(const char op) {
     if (op == '+' || op == '-') {
         return 0;
     }
@@ -57,6 +61,87 @@ int expr_get_op_precedence(char op) {
     }
 
     return -1;
+}
+
+static int expr_is_valid_number(const char *num, const size_t num_size) {
+    const char *np, *np_end;
+
+    if (num == NULL) {
+        return 0;
+    }
+
+    np = num;
+    np_end = np + num_size;
+
+    if (*np == '-' && (np + 1) == np_end) {
+        return 0;
+    }
+
+    np += (*np == '-');
+
+    while (np != np_end) {
+        if (!isdigit(*np)) {
+            return 0;
+        }
+
+        np++;
+    }
+
+    return 1;
+}
+
+char *expr_get_curr_symbol(const char *buffer, const char *buffer_end, const char **next, size_t *symbol_size) {
+    const char *bp, *tbp;
+    char *symbol = NULL;
+    int neg = 0;
+
+    if (buffer == NULL || *buffer == 0 || buffer_end == NULL ||
+        next == NULL || symbol_size == NULL || buffer >= buffer_end) {
+        if (symbol_size != NULL) {
+            *symbol_size = 0;
+        }
+        return NULL;
+    }
+
+    *symbol_size = 0;
+
+    // INFO(Rafael): Finding the initial point of the current symbol.
+
+    bp = buffer;
+
+    while (bp != buffer_end && is_expr_blank(*bp)) {
+        bp++;
+    }
+
+    // INFO(Rafael): Finding the initial point of the next symbol.
+
+    if (*bp == '-' && (bp + 1) != buffer_end && isdigit(*(bp + 1))) {
+        bp += 1;
+        neg = 1;
+    }
+
+    if (isdigit(*bp)) {
+        (*next) = bp + 1;
+
+        while ((*next) != buffer_end && isdigit(**next)) {
+            (*next)++;
+        }
+
+        bp -= neg;
+    } else if (is_expr_op(*bp) || (*bp) == '(' || (*bp) == ')') {
+        (*next) = bp + 1;
+    } else {
+        return NULL;
+    }
+
+    // INFO(Rafael): Copying the current symbol and returning it.
+
+    *symbol_size = (*next) - bp;
+    symbol = (char *) expr_alloc(*symbol_size + 1);
+    memset(symbol, 0, *symbol_size + 1);
+    memcpy(symbol, bp, *symbol_size);
+
+    return symbol;
 }
 
 int expr_add(expr_stack_ctx **stack, int *has_error) {
