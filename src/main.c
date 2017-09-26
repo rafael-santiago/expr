@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     if (argc > 1) {
         if (strcmp(argv[1], "--version") == 0) {
             printf("expr-v%s\n\n", EXPR_VERSION);
-            printf("expr is Copyright (C) 2015-2017 by Rafael Santiago.\n"
+            printf("expr is Copyright (C) 2017 by Rafael Santiago.\n"
                    "Bug reports, feedback, etc: <voidbrainvoid@gmail.com> or "
                    "<https://github.com/rafael-santiago/expr/issues>\n");
             return 0;
@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
     printf("INFO: to exit the program type <CTRL>+c and then <ENTER>.\n\n");
 
     while (!expr_exit) {
-        printf(">>> ");
+        printf("??? ");
         memset(ifx_expr, 0, sizeof(ifx_expr) / sizeof(ifx_expr[0]));
         fgets(ifx_expr, sizeof(ifx_expr) / sizeof(ifx_expr[0]), stdin);
         if (expr_exit || (strlen(ifx_expr) == 1 && ifx_expr[0] == '\n')) {
