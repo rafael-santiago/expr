@@ -29,13 +29,13 @@
         *has_error = 1;\
         return 0;\
     }\
-    a = atoi(expr_stack_top(*stack)->data);\
+    b = atoi(expr_stack_top(*stack)->data);\
     (*stack) = expr_stack_pop(*stack);\
     if (expr_stack_empty(*stack)) {\
         *has_error = 1;\
         return 0;\
     }\
-    b = atoi(expr_stack_top(*stack)->data);\
+    a = atoi(expr_stack_top(*stack)->data);\
     (*stack) = expr_stack_pop(*stack);\
 }\
 
@@ -113,6 +113,10 @@ char *expr_get_curr_symbol(const char *buffer, const char *buffer_end, const cha
         bp++;
     }
 
+    if (bp == buffer_end) {
+        return NULL;
+    }
+
     // INFO(Rafael): Finding the initial point of the next symbol.
 
     if (*bp == '-' && (bp + 1) != buffer_end && isdigit(*(bp + 1))) {
@@ -128,12 +132,9 @@ char *expr_get_curr_symbol(const char *buffer, const char *buffer_end, const cha
         }
 
         bp -= neg;
-    } else if (is_expr_op(*bp) || (*bp) == '(' || (*bp) == ')') {
+    } else {/*if (is_expr_op(*bp) || (*bp) == '(' || (*bp) == ')') {*/
         (*next) = bp + 1;
-    } else {
-        return NULL;
     }
-
     // INFO(Rafael): Copying the current symbol and returning it.
 
     *symbol_size = (*next) - bp;

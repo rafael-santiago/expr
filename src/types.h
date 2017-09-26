@@ -10,6 +10,8 @@
 
 #include <stdlib.h>
 
+#define EXPR_VERSION "0.1"
+
 typedef struct expr_stack {
     char *data;
     size_t data_size;

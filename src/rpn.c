@@ -137,6 +137,8 @@ int expr_eval(const char *rpn, const size_t rpn_size, int *has_error) {
 
     symbol = expr_get_curr_symbol(rp_next, rp_end, &rp_next, &symbol_size);
 
+    *has_error = 0;
+
     while (symbol != NULL) {
         if (symbol_size > 1 || isdigit(*symbol)) {
             stack = expr_stack_push(stack, symbol, symbol_size);

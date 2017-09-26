@@ -211,10 +211,10 @@ CUTE_TEST_CASE(expr_sub_tests)
     expr_stack_ctx *stack = NULL;
     int has_error;
 
-    stack = expr_stack_push(stack, "3", 1);
+    stack = expr_stack_push(stack, "4", 1);
     CUTE_ASSERT(stack != NULL);
 
-    stack = expr_stack_push(stack, "4", 1);
+    stack = expr_stack_push(stack, "3", 1);
     CUTE_ASSERT(stack != NULL);
 
     CUTE_ASSERT(expr_sub(&stack, &has_error) == 1);
@@ -247,10 +247,10 @@ CUTE_TEST_CASE(expr_div_tests)
     expr_stack_ctx *stack = NULL;
     int has_error;
 
-    stack = expr_stack_push(stack, "5", 1);
+    stack = expr_stack_push(stack, "250", 3);
     CUTE_ASSERT(stack != NULL);
 
-    stack = expr_stack_push(stack, "250", 3);
+    stack = expr_stack_push(stack, "5", 1);
     CUTE_ASSERT(stack != NULL);
 
     CUTE_ASSERT(expr_div(&stack, &has_error) == 50);
@@ -268,7 +268,8 @@ CUTE_TEST_CASE(expr_eval_tests)
     };
     struct expr_eval_test test_vector[] = {
         { "1 2 +", 3 },
-        { "15 7 1 1 + - / 3 * 2 1 1 + + -", 4 },
+        { "15 7 1 1 + - / 3 * 2 1 1 + + -", 5 },
+        { "15 7 / 1 - 1 3 * + 2 - 1 + 1 +", 4 },
         { "-1 -1 -", 0 },
         { "-1 -1 +", -2 }
     };
@@ -379,25 +380,49 @@ CUTE_TEST_CASE(expr_check_tests)
         int is_valid;
     };
     struct expr_check_test test_vector[] = {
-        { ""                                                      , 0 },
-        { "1"                                                     , 1 },
-        { "+"                                                     , 0 },
-        { "-"                                                     , 0 },
-        { "/"                                                     , 0 },
-        { "*"                                                     , 0 },
-        { "1 + 1"                                                 , 1 },
-        { "1 + "                                                  , 0 },
-        { "1+"                                                    , 0 },
-        { "(1 + 2 + 3)"                                           , 1 },
-        { "(1 + 2 + 3"                                            , 0 },
-        { "0 + 2 + 3) / (2 + 1)"                                  , 0 },
-        { "1 + 2"                                                 , 1 },
-        { "-1 + 2"                                                , 1 },
-        { "((15 / (7 - (1 + 1))) * 3) - (2 + (1 + 1))"            , 1 },
-        { "1+2"                                                   , 1 },
-        { "((15/(7-(1+1)))*3)-(2+(1+1))"                          , 1 },
-        { "1 +2"                                                  , 1 },
-        { "((15/ (7 -(1 +1)))* 3)-(2      +    (1\t\t\t+1\n)\r\r)", 1 }
+        { ""                                                      ,   0 },
+        { "1"                                                     ,   1 },
+        { "+"                                                     ,   0 },
+        { "-"                                                     ,   0 },
+        { "/"                                                     ,   0 },
+        { "*"                                                     ,   0 },
+        { "1 + 1"                                                 ,   1 },
+        { "1 + "                                                  ,   0 },
+        { "1+"                                                    ,   0 },
+        { "(1 + 2 + 3)"                                           ,   1 },
+        { "(1 + 2 + 3"                                            ,   0 },
+        { "0 + 2 + 3) / (2 + 1)"                                  ,   0 },
+        { "1 + 2"                                                 ,   1 },
+        { "-1 + 2"                                                ,   1 },
+        { "((15 / (7 - (1 + 1))) * 3) - (2 + (1 + 1))"            ,   1 },
+        { "1+2"                                                   ,   1 },
+        { "((15/(7-(1+1)))*3)-(2+(1+1))"                          ,   1 },
+        { "1 +2"                                                  ,   1 },
+        { "((15/ (7 -(1 +1)))* 3)-(2      +    (1\t\t\t+1\n)\r\r)",   1 },
+        { "(2-1)*3",                                                  1 },
+        { "2%2",                                                      0 },
+        { "qwert",                                                    0 },
+        { "1\n"                                                     , 1 },
+        { "+\n"                                                     , 0 },
+        { "-\n"                                                     , 0 },
+        { "/\n"                                                     , 0 },
+        { "*\n\n\n"                                                 , 0 },
+        { "1 + 1\n\n\n\n"                                           , 1 },
+        { "1 + \n"                                                  , 0 },
+        { "1+\n"                                                    , 0 },
+        { "(1 + 2 + 3)\n"                                           , 1 },
+        { "(1 + 2 + 3\n"                                            , 0 },
+        { "0 + 2 + 3) / (2 + 1)\n"                                  , 0 },
+        { "1 + 2\n"                                                 , 1 },
+        { "-1 + 2\n"                                                , 1 },
+        { "((15 / (7 - (1 + 1))) * 3) - (2 + (1 + 1))\n"            , 1 },
+        { "1+2\n"                                                   , 1 },
+        { "((15/(7-(1+1)))*3)-(2+(1+1))\n"                          , 1 },
+        { "1 +2\n"                                                  , 1 },
+        { "((15/ (7 -(1 +1)))* 3)-(2      +    (1\t\t\t+1\n)\r\r)\t", 1 },
+        { "(2-1)*3\n",                                                1 },
+        { "2%2\n",                                                    0 },
+        { "qwert\n",                                                  0 }
     };
     size_t tv, tv_nr = sizeof(test_vector) / sizeof(test_vector[0]);
     char *ep;
