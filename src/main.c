@@ -47,15 +47,17 @@ int main(int argc, char **argv) {
         rpn = NULL;
         if (expr_check(ifx_expr, strlen(ifx_expr))) {
             rpn = expr_ifx2rpn(ifx_expr, strlen(ifx_expr), &rpn_size);
-        }
-        if (rpn != NULL) {
-            result = expr_eval(rpn, rpn_size, &has_error);
-            if (!has_error) {
-                printf("%d\n", result);
+            if (rpn != NULL) {
+                result = expr_eval(rpn, rpn_size, &has_error);
+                if (!has_error) {
+                    printf("%d\n", result);
+                } else {
+                    printf("ERROR: during expression evaluation.\n");
+                }
+                expr_free(rpn);
             } else {
-                printf("ERROR: during expression evaluation.\n");
+                printf("ERROR: during RPN conversion.\n");
             }
-            expr_free(rpn);
         } else {
             printf("ERROR: invalid expression.\n");
         }

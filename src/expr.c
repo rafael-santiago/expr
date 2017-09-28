@@ -13,6 +13,17 @@
 #include <stdio.h>
 #include <string.h>
 
+#define expr_operator_ab_impl(opname, stack, has_error, o)\
+int expr_ ## opname(expr_stack_ctx **stack, int *has_error) {\
+    int a, b;\
+    expr_stack_ctx *top = NULL;\
+    char tmp[255];\
+    expr_op_prologue(stack, has_error);\
+    expr_op_ab_text(stack, a, b, has_error);\
+    a = a o b;\
+    expr_op_epilogue(stack, has_error, tmp, a);\
+}
+
 #define expr_op_prologue(stack, has_error) {\
     if (has_error == NULL) {\
         return 0;\
@@ -50,6 +61,11 @@
 }
 
 static int expr_is_valid_number(const char *num, const size_t num_size);
+
+expr_operator_ab_impl(add, stack, has_error, +);
+expr_operator_ab_impl(sub, stack, has_error, -);
+expr_operator_ab_impl(mul, stack, has_error, *);
+expr_operator_ab_impl(div, stack, has_error, /);
 
 int expr_get_op_precedence(const char op) {
     if (op == '+' || op == '-') {
@@ -143,50 +159,6 @@ char *expr_get_curr_symbol(const char *buffer, const char *buffer_end, const cha
     memcpy(symbol, bp, *symbol_size);
 
     return symbol;
-}
-
-int expr_add(expr_stack_ctx **stack, int *has_error) {
-    int a, b;
-    expr_stack_ctx *top = NULL;
-    char tmp[255];
-
-    expr_op_prologue(stack, has_error);
-    expr_op_ab_text(stack, a, b, has_error);
-    a += b;
-    expr_op_epilogue(stack, has_error, tmp, a);
-}
-
-int expr_sub(expr_stack_ctx **stack, int *has_error) {
-    int a, b;
-    expr_stack_ctx *top = NULL;
-    char tmp[255];
-
-    expr_op_prologue(stack, has_error);
-    expr_op_ab_text(stack, a, b, has_error);
-    a -= b;
-    expr_op_epilogue(stack, has_error, tmp, a);
-}
-
-int expr_mul(expr_stack_ctx **stack, int *has_error) {
-    int a, b;
-    expr_stack_ctx *top = NULL;
-    char tmp[255];
-
-    expr_op_prologue(stack, has_error);
-    expr_op_ab_text(stack, a, b, has_error);
-    a *= b;
-    expr_op_epilogue(stack, has_error, tmp, a);
-}
-
-int expr_div(expr_stack_ctx **stack, int *has_error) {
-    int a, b;
-    expr_stack_ctx *top = NULL;
-    char tmp[255];
-
-    expr_op_prologue(stack, has_error);
-    expr_op_ab_text(stack, a, b, has_error);
-    a /= b;
-    expr_op_epilogue(stack, has_error, tmp, a);
 }
 
 int expr_check(const char *expr, const size_t expr_size) {

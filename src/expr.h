@@ -14,17 +14,19 @@
 
 #define is_expr_op(b) ( (b) == '+' || (b) == '-' || (b) == '*' || (b) == '/')
 
+#define expr_operator_ab_decl(opname, stack, has_error) int expr_ ## opname (expr_stack_ctx **stack, int *has_error);
+
 int expr_get_op_precedence(char op);
 
 char *expr_get_curr_symbol(const char *buffer, const char *buffer_end, const char **next, size_t *symbol_size);
 
-int expr_add(expr_stack_ctx **stack, int *has_error);
+expr_operator_ab_decl(add, stack, has_error);
 
-int expr_sub(expr_stack_ctx **stack, int *has_error);
+expr_operator_ab_decl(sub, stack, has_error);
 
-int expr_mul(expr_stack_ctx **stack, int *has_error);
+expr_operator_ab_decl(mul, stack, has_error);
 
-int expr_div(expr_stack_ctx **stack, int *has_error);
+expr_operator_ab_decl(div, stack, has_error);
 
 int expr_check(const char *expr, const size_t expr_size);
 
