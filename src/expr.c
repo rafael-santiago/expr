@@ -26,11 +26,11 @@ void expr_ ## opname(expr_stack_ctx **stack, int *has_error) {\
 
 #define expr_op_prologue(stack, has_error) {\
     if (has_error == NULL) {\
-        return 0;\
+        return;\
     }\
     if (stack == NULL) {\
         *has_error = 1;\
-        return 0;\
+        return;\
     }\
     *has_error = 0;\
 }
@@ -38,13 +38,13 @@ void expr_ ## opname(expr_stack_ctx **stack, int *has_error) {\
 #define expr_op_ab_text(stack, a, b, has_error) {\
     if (expr_stack_empty(*stack)) {\
         *has_error = 1;\
-        return 0;\
+        return;\
     }\
     b = atoi(expr_stack_top(*stack)->data);\
     (*stack) = expr_stack_pop(*stack);\
     if (expr_stack_empty(*stack)) {\
         *has_error = 1;\
-        return 0;\
+        return;\
     }\
     a = atoi(expr_stack_top(*stack)->data);\
     (*stack) = expr_stack_pop(*stack);\
