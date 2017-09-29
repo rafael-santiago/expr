@@ -106,6 +106,22 @@ local function get_main_project_objs(objs type list) : result type list {
 
     hefesto.sys.cd($oldcwd);
 
+    if (hefesto.sys.os_name() == "windows") {
+        var quoted_paths type list;
+
+        $o = 0;
+        while ($o < $objs.count()) {
+            $objpath = $objs.item($o);
+            if (isfile($objpath)) {
+                $objpath = "\"" + $objpath + "\"";
+            }
+            $quoted_paths.add_item($objpath);
+            $o = $o + 1;
+        }
+
+        result $quoted_paths;
+    }
+
     result $objs;
 }
 
