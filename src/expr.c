@@ -14,7 +14,7 @@
 #include <string.h>
 
 #define expr_operator_ab_impl(opname, stack, has_error, o)\
-int expr_ ## opname(expr_stack_ctx **stack, int *has_error) {\
+void expr_ ## opname(expr_stack_ctx **stack, int *has_error) {\
     int a, b;\
     expr_stack_ctx *top = NULL;\
     char tmp[255];\
@@ -55,9 +55,8 @@ int expr_ ## opname(expr_stack_ctx **stack, int *has_error) {\
     (*stack) = expr_stack_push(*stack, tmp, strlen(tmp));\
     if ((*stack) == NULL) {\
         *has_error = 1;\
-        return 0;\
+        return;\
     }\
-    return result;\
 }
 
 static int expr_is_valid_number(const char *num, const size_t num_size);

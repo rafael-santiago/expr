@@ -14,7 +14,7 @@
 
 #define is_expr_op(b) ( (b) == '+' || (b) == '-' || (b) == '*' || (b) == '/')
 
-#define expr_operator_ab_decl(opname, stack, has_error) int expr_ ## opname (expr_stack_ctx **stack, int *has_error);
+#define expr_operator_ab_decl(opname, stack, has_error) void expr_ ## opname (expr_stack_ctx **stack, int *has_error);
 
 int expr_get_op_precedence(char op);
 

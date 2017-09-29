@@ -199,7 +199,8 @@ CUTE_TEST_CASE(expr_add_tests)
     stack = expr_stack_push(stack, "3", 1);
     CUTE_ASSERT(stack != NULL);
 
-    CUTE_ASSERT(expr_add(&stack, &has_error) == 5);
+    expr_add(&stack, &has_error);
+
     CUTE_ASSERT(has_error == 0);
     CUTE_ASSERT(expr_stack_empty(stack) == 0);
     CUTE_ASSERT(strcmp(expr_stack_top(stack)->data, "5") == 0);
@@ -217,7 +218,8 @@ CUTE_TEST_CASE(expr_sub_tests)
     stack = expr_stack_push(stack, "3", 1);
     CUTE_ASSERT(stack != NULL);
 
-    CUTE_ASSERT(expr_sub(&stack, &has_error) == 1);
+    expr_sub(&stack, &has_error);
+
     CUTE_ASSERT(has_error == 0);
     CUTE_ASSERT(expr_stack_empty(stack) == 0);
     CUTE_ASSERT(strcmp(expr_stack_top(stack)->data, "1") == 0);
@@ -235,7 +237,8 @@ CUTE_TEST_CASE(expr_mul_tests)
     stack = expr_stack_push(stack, "5", 1);
     CUTE_ASSERT(stack != NULL);
 
-    CUTE_ASSERT(expr_mul(&stack, &has_error) == 250);
+    expr_mul(&stack, &has_error);
+
     CUTE_ASSERT(has_error == 0);
     CUTE_ASSERT(expr_stack_empty(stack) == 0);
     CUTE_ASSERT(strcmp(expr_stack_top(stack)->data, "250") == 0);
@@ -253,7 +256,8 @@ CUTE_TEST_CASE(expr_div_tests)
     stack = expr_stack_push(stack, "5", 1);
     CUTE_ASSERT(stack != NULL);
 
-    CUTE_ASSERT(expr_div(&stack, &has_error) == 50);
+    expr_div(&stack, &has_error);
+
     CUTE_ASSERT(has_error == 0);
     CUTE_ASSERT(expr_stack_empty(stack) == 0);
     CUTE_ASSERT(strcmp(expr_stack_top(stack)->data, "50") == 0);

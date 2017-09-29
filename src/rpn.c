@@ -145,19 +145,19 @@ int expr_eval(const char *rpn, const size_t rpn_size, int *has_error) {
         } else if (is_expr_op(*symbol)) {
             switch (*symbol) {
                 case '+':
-                    result += expr_add(&stack, has_error);
+                    expr_add(&stack, has_error);
                     break;
 
                 case '-':
-                    result += expr_sub(&stack, has_error);
+                    expr_sub(&stack, has_error);
                     break;
 
                 case '*':
-                    result += expr_mul(&stack, has_error);
+                    expr_mul(&stack, has_error);
                     break;
 
                 case '/':
-                    result += expr_div(&stack, has_error);
+                    expr_div(&stack, has_error);
                     break;
 
                 default:
