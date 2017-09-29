@@ -115,7 +115,7 @@ char *expr_ifx2rpn(const char *ifx, const size_t ifx_size, size_t *rpn_size) {
 
         *rpn_size = rp_size;
 
-        rpn = expr_realloc(rpn, rp_size);
+        rpn = expr_realloc(rpn, rp_size + 1);
     }
 
     return rpn;
