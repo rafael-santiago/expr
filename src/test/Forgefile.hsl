@@ -37,6 +37,8 @@ expr-tests.prologue() {
 
     $ldflags.add_item("-lcutest");
 
+    forge_cutest();
+
     $ldflags = get_main_project_objs($ldflags);
 
     var current_os type string;
@@ -98,4 +100,24 @@ local function get_main_project_objs(objs type list) : result type list {
     hefesto.sys.cd($oldcwd);
 
     result $objs;
+}
+
+local function forge_cutest() : result type none {
+    var oldcwd type string;
+
+    $oldcwd = hefesto.sys.pwd();
+
+    if (hefesto.sys.cd("cutest/src") == 0) {
+        hefesto.sys.echo("BUILD ERROR: Unable to find the sub-directory cutest/src.\n");
+        hefesto.project.abort(1);
+    }
+
+
+    hefesto.sys.forge("cutest", "Forgefile.hsl", "--obj-output-dir=obj --bin-output-dir=lib");
+
+    if (hefesto.sys.last_forge_result() != 0) {
+        hefesto.project.abort(1);
+    }
+
+    hefesto.sys.cd($oldcwd);
 }
