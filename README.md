@@ -19,6 +19,10 @@ Done!
 
 ## How can I build it?
 
+Until now I successfully built  it on ``Linux``, ``FreeBSD``, ``NetBSD``, ``OpenBSD``, ``MINIX``,
+``Solaris`` and also ``Windows``. This project uses ``ANSI C``, so virtually you will be able to
+easily build this code in any decent platform.
+
 For my own projects I always use my own [build system](https://github.com/rafael-santiago/hefesto).
 After following the steps to make ``hefesto`` work on your system all you should do is:
 
