@@ -147,7 +147,7 @@ char *expr_get_curr_symbol(const char *buffer, const char *buffer_end, const cha
         }
 
         bp -= neg;
-    } else {/*if (is_expr_op(*bp) || (*bp) == '(' || (*bp) == ')') {*/
+    } else {
         (*next) = bp + 1;
     }
     // INFO(Rafael): Copying the current symbol and returning it.
