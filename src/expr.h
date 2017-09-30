@@ -30,4 +30,6 @@ expr_operator_ab_decl(div, stack, has_error);
 
 int expr_check(const char *expr, const size_t expr_size);
 
+#undef expr_operator_ab_decl
+
 #endif
