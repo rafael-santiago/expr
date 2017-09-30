@@ -34,6 +34,14 @@ you@Somewhere:~/src/expr/src# hefesto
 After calling ``hefesto`` the codes will be compiled and some tests will run. The binary will be
 within the directory ``../bin``.
 
+The build was written to support ``GCC`` and also ``Clang``. The build will detect the available
+compiler and use it, ``GCC`` is used by default. If you want to force the usage of ``Clang``
+call ``hefesto`` with the following build option:
+
+```
+you@Somewhere:~/src/expr/src# hefesto --use-toolset=clang-c-app
+```
+
 Anyway, if you are not interested in running tests and all this stuff, you can build the software
 by hand. This is a pretty minimalist project and you can easily compile it in just one simple single
 command line:
